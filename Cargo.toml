@@ -1,0 +1,6 @@
+[package]
+name = "gadgetcoin"
+version = "0.1.0"
+authors = ["Krishna Chittur <kchittur@utexas.edu>"]
+
+[dependencies]
