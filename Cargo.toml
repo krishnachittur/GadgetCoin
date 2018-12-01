@@ -1,6 +1,17 @@
 [package]
 name = "gadgetcoin"
 version = "0.1.0"
-authors = ["Krishna Chittur <kchittur@utexas.edu>"]
+authors = ["Krishna Chittur <kchittur@utexas.edu>", "Subrat Mainali <mainali.subrat@utexas.edu>"]
 
 [dependencies]
+ring = "0.13"
+
+[lib]
+doctest = false
+
+[dev-dependencies]
+criterion = "0.2"
+
+[[bench]]
+name = "ethbench"
+harness = false

@@ -1,3 +1,5 @@
+extern crate gadgetcoin;
+
 fn main() {
-    println!("Hello, world!");
+    gadgetcoin::run()
 }
