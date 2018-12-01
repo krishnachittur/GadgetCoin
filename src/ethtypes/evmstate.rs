@@ -1,0 +1,3 @@
+pub struct EVMState {
+    // TODO:
+}
