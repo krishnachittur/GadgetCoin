@@ -1,3 +1,6 @@
+mod aliases;
+pub use self::aliases::*;
+
 mod ethaccount;
 pub use self::ethaccount::*;
 
@@ -19,5 +22,8 @@ pub use self::evmstate::*;
 mod gas;
 pub use self::gas::*;
 
-mod type_aliases;
-pub use self::type_aliases::*;
+mod ops;
+pub use self::ops::*;
+
+mod wei;
+pub use self::wei::*;

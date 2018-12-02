@@ -1,7 +1,7 @@
 use super::ethtxn::{
     ETHTxn,
 };
-use super::type_aliases::{
+use super::aliases::{
     BlockHash,
     ProofOfWork
 };

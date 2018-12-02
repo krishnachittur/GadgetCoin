@@ -1,4 +1,4 @@
-use super::type_aliases::{
+use super::aliases::{
     ETHAddress,
 };
 
