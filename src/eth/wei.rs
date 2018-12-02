@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub};
 use super::gas::Gas;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub struct Wei {
     wei: u128,
 }
