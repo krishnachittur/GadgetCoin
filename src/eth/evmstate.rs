@@ -12,3 +12,12 @@ pub struct EVMState {
     pub transaction: ETHTxn,
     pub block_state: ETHState,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::EVMState;
+    #[test]
+    fn test_evmstate() {
+        // TODO: write a basic script here and check output
+    }
+}
