@@ -1,7 +1,9 @@
-use std::ops::{Add, Sub};
+use std::ops::{Add, Sub, AddAssign};
+use std::clone::Clone;
 use super::gas::Gas;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+#[derive(Debug, PartialEq, Eq, PartialOrd,
+    Ord, Serialize, Copy)]
 pub struct Wei {
     wei: u128,
 }
@@ -31,7 +33,7 @@ impl Wei {
         Self{wei: init * Self::WEI_PER_GWEI}
     }
     pub fn from_gas(gasprice: Wei, gas: Gas) -> Self {
-        Self{wei: gasprice.wei * gas}        
+        Self{wei: gasprice.wei * gas}
     }
 }
 
@@ -50,6 +52,19 @@ impl Sub for Wei {
         self.wei
             .checked_sub(other.wei)
             .map(|c| Self{wei: c})
+    }
+}
+
+impl AddAssign for Wei {
+    fn add_assign(&mut self, other: Wei) {
+        self.wei += other.wei;
+    }
+}
+
+
+impl Clone for Wei {
+    fn clone(&self) -> Wei {
+        Self{wei: self.wei}
     }
 }
 

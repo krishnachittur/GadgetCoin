@@ -6,10 +6,10 @@ authors = ["Krishna Chittur <kchittur@utexas.edu>", "Subrat Mainali <mainali.sub
 [dependencies]
 ring = "0.13"
 rand = "0.4"
-libsecp256k1 = "0.2.1"
-serde = "1.0.80"
-serde_derive = "1.0.80"
-sha3 = "0.8.1"
+libsecp256k1 = "0.2"
+serde = "1.0"
+serde_derive = "1.0"
+sha3 = "0.8"
 
 [dependencies.bincode]
 features = ["i128"]

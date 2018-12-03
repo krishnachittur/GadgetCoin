@@ -1,6 +1,6 @@
 use super::{gas, gas::Gas};
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy)]
 pub enum Op {
     STOP,
     ADD,
@@ -29,7 +29,7 @@ pub enum Op {
     ADDVAL,
     SUBVAL,
 
-    INVALID,
+    INVALID(u8),
 }
 
 impl Op {
@@ -62,12 +62,12 @@ impl Op {
             Op::ADDVAL => gas::GBASE,
             Op::SUBVAL => gas::GBASE,
 
-            Op::INVALID => gas::GZERO,
+            Op::INVALID(_) => gas::GZERO,
         }
     }
 
-    pub fn from_opcode(opcode: u8) -> Op {
-        match opcode {
+    pub fn from_byte(byte: u8) -> Op {
+        match byte {
             0x00 => Op::STOP,
             0x01 => Op::ADD,
             0x02 => Op::MUL,
@@ -95,21 +95,21 @@ impl Op {
             0xb1 => Op::ADDVAL,
             0xb2 => Op::SUBVAL,   
 
-            _ => Op::INVALID,     
+            x => Op::INVALID(x),
         }
     }
 
-    pub fn from_opcodes(opcodes: Vec<u8>) -> Vec<Op> {
+    pub fn from_bytes(bytes: &[u8]) -> Vec<Op> {
         let mut ops = Vec::new();
-        let mut iter = opcodes.into_iter();
+        let mut iter = bytes.iter();
         loop {
             match iter.next() {
                 None => break,
-                Some(opcode) => {
-                    match Op::from_opcode(opcode) {
+                Some(byte) => {
+                    match Op::from_byte(*byte) {
                         Op::PUSH1(_) => {
                             if let Some(val) = iter.next() {
-                                ops.push(Op::PUSH1(val));
+                                ops.push(Op::PUSH1(*val));
                             }
                         },
                         op => {
@@ -120,6 +120,12 @@ impl Op {
             }
         }
         ops
+    }
+}
+
+impl Clone for Op {
+    fn clone(&self) -> Op {
+        *self
     }
 }
 
@@ -139,7 +145,7 @@ mod tests {
     #[test]
     fn test_stop() {
         let opcodes: Vec<u8> = vec![0x00];
-        let actual = Op::from_opcodes(opcodes);
+        let actual = Op::from_bytes(opcodes);
         let expected = vec![Op::STOP];
         assert_eq!(compare_vecs(&actual, &expected), true);
     }
@@ -147,7 +153,7 @@ mod tests {
     #[test]
     fn test_stop_setval_difficulty_iszero() {
         let opcodes: Vec<u8> = vec![0x00, 0xb0, 0x44, 0x15];
-        let actual = Op::from_opcodes(opcodes);
+        let actual = Op::from_bytes(opcodes);
         let expected = vec![Op::STOP, Op::SETVAL, Op::DIFFICULTY, Op::ISZERO];
         assert_eq!(compare_vecs(&actual, &expected), true);
     }
@@ -155,15 +161,15 @@ mod tests {
     #[test]
     fn test_balance_gasprice_jump_jumpi_pop_invalid() {
         let opcodes: Vec<u8> = vec![0x31, 0x3a, 0x56, 0x57, 0x50, 0x05];
-        let actual = Op::from_opcodes(opcodes);
-        let expected = vec![Op::BALANCE, Op::GASPRICE, Op::JUMP, Op::JUMPI, Op::POP, Op::INVALID];
+        let actual = Op::from_bytes(opcodes);
+        let expected = vec![Op::BALANCE, Op::GASPRICE, Op::JUMP, Op::JUMPI, Op::POP, Op::INVALID(0x05)];
         assert_eq!(compare_vecs(&actual, &expected), true);
     }
 
     #[test]
     fn test_lt_push_gt_eq() {
         let opcodes: Vec<u8> = vec![0x10, 0x60, 0x10, 0x11, 0x14];
-        let actual = Op::from_opcodes(opcodes);
+        let actual = Op::from_bytes(opcodes);
         let expected = vec![Op::LT, Op::PUSH1(0x10), Op::GT, Op::EQ];
         assert_eq!(compare_vecs(&actual, &expected), true);
     }

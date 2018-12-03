@@ -1,11 +1,18 @@
-use super::aliases::{
-    ETHAddress,
-};
+use super::aliases::{ETHAddress,};
+use super::wei::{Wei,};
 
 pub struct ETHAccount {
     pub address : ETHAddress,
-    pub balance : u32,
+    pub balance : Wei,
     pub nonce : u32,
-    // contract_code : Option<!>, // only used for smart contracts
-    // storage : !, // only used for smart contracts
+}
+
+impl ETHAccount {
+    pub fn new(addr: ETHAddress) -> ETHAccount {
+        ETHAccount {
+            address: addr,
+            balance: Wei::from_wei(0),
+            nonce: 0,
+        }
+    }
 }

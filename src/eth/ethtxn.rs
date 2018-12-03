@@ -8,7 +8,7 @@ use super::aliases::{ETHAddress,};
 #[derive(Serialize)]
 pub struct ETHTxn {
     pub nonce: u32,
-    pub gasprice: Gas,
+    pub gasprice: Wei,
     pub gaslimit: Gas,
     pub recipient: ETHAddress,
     pub value: Wei,
@@ -29,7 +29,7 @@ impl ETHTxn {
     fn hashed_message(encoded: &[u8]) -> Result<secp256k1::Message, secp256k1::Error> {
         let hash = sha3::Keccak256::digest(encoded);
         secp256k1::Message::parse_slice(&hash)
-    } 
+    }
 
     /// Recovers the public key from the ETHTxn.
     fn recover_public_key(&self) -> Result<secp256k1::PublicKey, secp256k1::Error> {
@@ -60,7 +60,7 @@ impl ETHTxn {
 mod tests {
     use super::{ETHTxn, super::wei::Wei};
 
-    /// Returns Bull Sh*t ECSDA fields
+    /// Returns sample ECSDA fields
     fn get_bs_ecsda_field(bs_secret_key: secp256k1::SecretKey) -> (secp256k1::Signature, secp256k1::RecoveryId) {
         let bs_msg_bytes = b"deadbeef";
         let bs_msg = match ETHTxn::hashed_message(bs_msg_bytes) {
