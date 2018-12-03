@@ -12,17 +12,10 @@ pub enum Op {
     GT,
     EQ,
     ISZERO,
-
-    ADDRESS,
-    BALANCE,
-    GASPRICE,
-    DIFFICULTY,
-    GASLIMIT,
     
     POP,
     JUMP,
     JUMPI,
-    GAS,
 
     PUSH1(u8),
     SETVAL,
@@ -46,16 +39,9 @@ impl Op {
             Op::EQ => gas::GVERYLOW,
             Op::ISZERO => gas::GVERYLOW,
 
-            Op::ADDRESS => gas::GBASE,
-            Op::BALANCE => gas::GBALANCE,
-            Op::GASPRICE => gas::GBASE,
-            Op::DIFFICULTY => gas::GBASE,
-            Op::GASLIMIT => gas::GBASE,
-
             Op::POP => gas::GBASE,
             Op::JUMP => gas::GMID,
             Op::JUMPI => gas::GHIGH,
-            Op::GAS => gas::GBASE,
 
             Op::PUSH1(_) => gas::GVERYLOW,
             Op::SETVAL => gas::GBASE,
@@ -79,16 +65,9 @@ impl Op {
             0x14 => Op::EQ,
             0x15 => Op::ISZERO,
 
-            0x30 => Op::ADDRESS,
-            0x31 => Op::BALANCE,
-            0x3a => Op::GASPRICE,
-            0x44 => Op::DIFFICULTY,
-            0x45 => Op::GASLIMIT,
-
             0x50 => Op::POP,
             0x56 => Op::JUMP,
             0x57 => Op::JUMPI,
-            0x5a => Op::GAS,
 
             0x60 => Op::PUSH1(0),
             0xb0 => Op::SETVAL,
@@ -145,31 +124,31 @@ mod tests {
     #[test]
     fn test_stop() {
         let opcodes: Vec<u8> = vec![0x00];
-        let actual = Op::from_bytes(opcodes);
+        let actual = Op::from_bytes(&opcodes);
         let expected = vec![Op::STOP];
         assert_eq!(compare_vecs(&actual, &expected), true);
     }
 
     #[test]
     fn test_stop_setval_difficulty_iszero() {
-        let opcodes: Vec<u8> = vec![0x00, 0xb0, 0x44, 0x15];
-        let actual = Op::from_bytes(opcodes);
-        let expected = vec![Op::STOP, Op::SETVAL, Op::DIFFICULTY, Op::ISZERO];
+        let opcodes: Vec<u8> = vec![0x00, 0xb0, 0x15];
+        let actual = Op::from_bytes(&opcodes);
+        let expected = vec![Op::STOP, Op::SETVAL, Op::ISZERO];
         assert_eq!(compare_vecs(&actual, &expected), true);
     }
 
     #[test]
     fn test_balance_gasprice_jump_jumpi_pop_invalid() {
-        let opcodes: Vec<u8> = vec![0x31, 0x3a, 0x56, 0x57, 0x50, 0x05];
-        let actual = Op::from_bytes(opcodes);
-        let expected = vec![Op::BALANCE, Op::GASPRICE, Op::JUMP, Op::JUMPI, Op::POP, Op::INVALID(0x05)];
+        let opcodes: Vec<u8> = vec![0x56, 0x57, 0x50, 0x05];
+        let actual = Op::from_bytes(&opcodes);
+        let expected = vec![Op::JUMP, Op::JUMPI, Op::POP, Op::INVALID(0x05)];
         assert_eq!(compare_vecs(&actual, &expected), true);
     }
 
     #[test]
     fn test_lt_push_gt_eq() {
         let opcodes: Vec<u8> = vec![0x10, 0x60, 0x10, 0x11, 0x14];
-        let actual = Op::from_bytes(opcodes);
+        let actual = Op::from_bytes(&opcodes);
         let expected = vec![Op::LT, Op::PUSH1(0x10), Op::GT, Op::EQ];
         assert_eq!(compare_vecs(&actual, &expected), true);
     }

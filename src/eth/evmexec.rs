@@ -3,14 +3,32 @@ use super::gas::Gas;
 use super::wei::Wei;
 
 pub struct ExecutionContext {
-    pub stack: Vec<u8>,
-    pub pc: u32,
-    pub gas_left: Gas,
-    pub code: Vec<Op>,
-    pub txn_value: Wei,
+    stack: Vec<u8>,
+    pc: u32,
+    gas_left: Gas,
+    code: Vec<Op>,
+    txn_value: Wei,
 }
 
 impl ExecutionContext {
+
+    pub fn new(gaslimit: Gas, code: Vec<Op>, txn_value: Wei) -> ExecutionContext {
+        ExecutionContext {
+            stack: Vec::new(),
+            pc: 0,
+            gas_left: gaslimit,
+            code: code,
+            txn_value: txn_value,
+        }
+    }
+
+    pub fn get_gas_left(&self) -> Gas {
+        self.gas_left
+    }
+
+    pub fn get_value(&self) -> Wei {
+        self.txn_value
+    }
 
     // return true if terminated normally, false on error
     pub fn finish_executing(&mut self) -> bool {
@@ -39,7 +57,7 @@ impl ExecutionContext {
             return Err(())
         }
         // default pc increment
-        let new_pc = self.pc + 1;
+        let mut new_pc = self.pc + 1;
         let op = self.code[self.pc as usize];
         match op {
             Op::STOP => return Ok(false),
@@ -108,44 +126,37 @@ impl ExecutionContext {
                     self.push(0);
                 }
             },
-            Op::ADDRESS => {
-                
-            },
-            Op::BALANCE => {
-
-            },
-            Op::GASPRICE => {
-
-            },
-            Op::DIFFICULTY => {
-
-            },
-            Op::GASLIMIT => {
-
-            },
             Op::POP => {
                 self.pop()?;
             },
             Op::JUMP => {
-
+                new_pc = self.pop()? as u32;
             },
             Op::JUMPI => {
-
-            },
-            Op::GAS => {
-
+                let a = self.pop()?;
+                let b = self.pop()?;
+                if b != 0 {
+                    new_pc = a as u32;
+                }
             },
             Op::PUSH1(val) => {
                 self.push(val);
             },
             Op::SETVAL => {
-
+                let a = self.pop()?;
+                self.txn_value = Wei::from_wei(a.into());
             },
             Op::ADDVAL => {
-
+                let a = self.pop()?;
+                self.txn_value += Wei::from_wei(a.into());
             },
             Op::SUBVAL => {
-
+                let a = self.pop()?;
+                let wei = Wei::from_wei(a.into());
+                self.txn_value = match self.txn_value - wei {
+                    Some(x) => x,
+                    None => Wei::from_wei(0),
+                };
             },
             Op::INVALID(_) => {
                 return Err(())
@@ -157,5 +168,53 @@ impl ExecutionContext {
             None => return Err(())
         };
         Ok(true)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        ExecutionContext,
+        super::ops::Op::*,
+        super::wei::Wei,
+    };
+
+    #[test]
+    fn basic_evmexec_execution() {
+        let mut engine = ExecutionContext::new(
+            20, // gas limit
+            vec![STOP], //ops
+            Wei::from_wei(100), // transaction value
+        );
+        assert!(engine.finish_executing());
+        assert_eq!(engine.get_gas_left(), 20 - STOP.to_cost());
+        assert_eq!(engine.get_value(), Wei::from_wei(100));
+    }
+
+    #[test]
+    fn evmexec_math() {
+        let ops = vec![PUSH1(2), PUSH1(3), PUSH1(4), PUSH1(7), PUSH1(1),
+                    ADD, SUB, MUL, DIV, SETVAL, STOP];
+        let gascost = ops.iter().fold(0, |sum, x| sum + x.to_cost());
+        let mut engine = ExecutionContext::new(gascost + 20, ops, Wei::from_wei(100));
+        assert!(engine.finish_executing());
+        assert_eq!(engine.get_gas_left(), 20);
+        assert_eq!(engine.get_value(), Wei::from_wei(6));
+    }
+
+    #[test]
+    fn evmexec_jumping_subval() {
+        let ops = vec![PUSH1(2), PUSH1(3), GT, PUSH1(7), JUMPI,
+                    INVALID(0xff), INVALID(0xff), PUSH1(9), SUBVAL, STOP];
+        let mut engine = ExecutionContext::new(1000, ops, Wei::from_wei(4));
+        assert!(engine.finish_executing());
+        assert_eq!(engine.get_value(), Wei::from_wei(0));
+    }
+
+    #[test]
+    fn evmexec_infinite_loop() {
+        let ops = vec![PUSH1(100), PUSH1(0), JUMPI, STOP];
+        let mut engine = ExecutionContext::new(1000, ops, Wei::from_wei(4));
+        assert!(!engine.finish_executing());
     }
 }

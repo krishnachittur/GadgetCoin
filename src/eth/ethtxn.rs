@@ -85,7 +85,7 @@ mod tests {
 
         let mut sample_txn = ETHTxn {
             nonce: 13,
-            gasprice: 20,
+            gasprice: Wei::from_wei(20),
             gaslimit: 400,
             recipient: match ETHTxn::get_address_from_public_key(receiver_pubkey) {
                 Ok(val) => val,
@@ -122,7 +122,7 @@ mod tests {
 
         let mut sample_txn = ETHTxn {
             nonce: 13,
-            gasprice: 20,
+            gasprice: Wei::from_wei(20),
             gaslimit: 400,
             recipient: match ETHTxn::get_address_from_public_key(receiver_pubkey) {
                 Ok(val) => val,
