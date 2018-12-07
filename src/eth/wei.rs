@@ -1,9 +1,8 @@
-use std::ops::{Add, Sub, AddAssign};
-use std::clone::Clone;
 use super::gas::Gas;
+use std::clone::Clone;
+use std::ops::{Add, AddAssign, Sub};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd,
-    Ord, Serialize, Copy)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Copy)]
 pub struct Wei {
     wei: u128,
 }
@@ -18,22 +17,32 @@ impl Wei {
         self.wei
     }
     pub fn from_wei(init: u128) -> Self {
-        Self{wei: init}
+        Self { wei: init }
     }
     pub fn from_szabo(init: u128) -> Self {
-        Self{wei: init * Self::WEI_PER_SZABO}
+        Self {
+            wei: init * Self::WEI_PER_SZABO,
+        }
     }
     pub fn from_finney(init: u128) -> Self {
-        Self{wei: init * Self::WEI_PER_FINNEY}
+        Self {
+            wei: init * Self::WEI_PER_FINNEY,
+        }
     }
     pub fn from_eth(init: u128) -> Self {
-        Self{wei: init * Self::WEI_PER_ETH}
+        Self {
+            wei: init * Self::WEI_PER_ETH,
+        }
     }
     pub fn from_gwei(init: u128) -> Self {
-        Self{wei: init * Self::WEI_PER_GWEI}
+        Self {
+            wei: init * Self::WEI_PER_GWEI,
+        }
     }
     pub fn from_gas(gasprice: Wei, gas: Gas) -> Self {
-        Self{wei: gasprice.wei * gas}
+        Self {
+            wei: gasprice.wei * gas,
+        }
     }
 }
 
@@ -41,7 +50,9 @@ impl Add for Wei {
     type Output = Wei;
 
     fn add(self, other: Wei) -> Self::Output {
-        Self{wei: self.wei + other.wei}
+        Self {
+            wei: self.wei + other.wei,
+        }
     }
 }
 
@@ -49,9 +60,7 @@ impl Sub for Wei {
     type Output = Option<Wei>;
 
     fn sub(self, other: Wei) -> Self::Output {
-        self.wei
-            .checked_sub(other.wei)
-            .map(|c| Self{wei: c})
+        self.wei.checked_sub(other.wei).map(|c| Self { wei: c })
     }
 }
 
@@ -61,27 +70,19 @@ impl AddAssign for Wei {
     }
 }
 
-
 impl Clone for Wei {
     fn clone(&self) -> Wei {
-        Self{wei: self.wei}
+        Self { wei: self.wei }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
     use super::Wei;
     #[test]
     fn test_wei_eq() {
-        assert_eq!(
-            Wei::from_wei(400 * Wei::WEI_PER_ETH),
-            Wei::from_eth(400)
-        );
-        assert_ne!(
-            Wei::from_szabo(300),
-            Wei::from_finney(300)
-        );
+        assert_eq!(Wei::from_wei(400 * Wei::WEI_PER_ETH), Wei::from_eth(400));
+        assert_ne!(Wei::from_szabo(300), Wei::from_finney(300));
     }
     #[test]
     fn test_wei_cmp() {
@@ -90,14 +91,8 @@ mod tests {
     }
     #[test]
     fn test_wei_math() {
-        assert_eq!(
-            Wei::from_szabo(10),
-            Wei::from_szabo(7) + Wei::from_szabo(3)
-        );
-        assert_eq!(
-            Wei::from_wei(50) - Wei::from_wei(51),
-            None
-        );
+        assert_eq!(Wei::from_szabo(10), Wei::from_szabo(7) + Wei::from_szabo(3));
+        assert_eq!(Wei::from_wei(50) - Wei::from_wei(51), None);
         assert_eq!(
             Wei::from_wei(56) - Wei::from_wei(51),
             Some(Wei::from_wei(5))

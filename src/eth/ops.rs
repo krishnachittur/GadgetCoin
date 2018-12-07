@@ -12,7 +12,7 @@ pub enum Op {
     GT,
     EQ,
     ISZERO,
-    
+
     POP,
     JUMP,
     JUMPI,
@@ -26,7 +26,7 @@ pub enum Op {
 }
 
 impl Op {
-    pub fn to_cost(&self) -> Gas {
+    pub fn to_cost(self) -> Gas {
         match &self {
             Op::STOP => gas::GZERO,
             Op::ADD => gas::GVERYLOW,
@@ -72,7 +72,7 @@ impl Op {
             0x60 => Op::PUSH1(0),
             0xb0 => Op::SETVAL,
             0xb1 => Op::ADDVAL,
-            0xb2 => Op::SUBVAL,   
+            0xb2 => Op::SUBVAL,
 
             x => Op::INVALID(x),
         }
@@ -84,18 +84,14 @@ impl Op {
         loop {
             match iter.next() {
                 None => break,
-                Some(byte) => {
-                    match Op::from_byte(*byte) {
-                        Op::PUSH1(_) => {
-                            if let Some(val) = iter.next() {
-                                ops.push(Op::PUSH1(*val));
-                            }
-                        },
-                        op => {
-                            ops.push(op)
-                        },
+                Some(byte) => match Op::from_byte(*byte) {
+                    Op::PUSH1(_) => {
+                        if let Some(val) = iter.next() {
+                            ops.push(Op::PUSH1(*val));
+                        }
                     }
-                }
+                    op => ops.push(op),
+                },
             }
         }
         ops
@@ -112,13 +108,12 @@ impl Clone for Op {
 mod tests {
     use super::Op;
 
-    fn compare_vecs<T: Eq>(v1:& Vec<T>, v2:& Vec<T>) -> bool {
+    fn compare_vecs<T: Eq>(v1: &Vec<T>, v2: &Vec<T>) -> bool {
         v1.iter()
             .zip(v2)
-            .filter(|&(v1_el, v2_el)| {
-                v1_el != v2_el
-            })
-            .count() == 0
+            .filter(|&(v1_el, v2_el)| v1_el != v2_el)
+            .count()
+            == 0
     }
 
     #[test]

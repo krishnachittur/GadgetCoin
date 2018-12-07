@@ -1,10 +1,11 @@
-use super::aliases::{ETHAddress,};
-use super::wei::{Wei,};
+use super::aliases::ETHAddress;
+use super::wei::Wei;
 
+#[derive(Debug)]
 pub struct ETHAccount {
-    pub address : ETHAddress,
-    pub balance : Wei,
-    pub nonce : u32,
+    pub address: ETHAddress,
+    pub balance: Wei,
+    pub nonce: u32,
 }
 
 impl ETHAccount {
