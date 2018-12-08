@@ -5,6 +5,8 @@ use super::evmexec::ExecutionContext;
 use super::ops::Op;
 use super::wei::Wei;
 
+const MINING_REWARD: u128 = 1000; // in wei
+
 pub struct EVMState {
     world_state: ETHState,
     miner_address: ETHAddress,
@@ -28,6 +30,10 @@ impl EVMState {
 
     pub fn get_final_state(self) -> ETHState {
         self.world_state
+    }
+
+    pub fn reward_miner(&mut self, miner: ETHAddress) {
+        self.world_state.pay(&miner, Wei::from_wei(MINING_REWARD));
     }
 
     // ingest and process a well-formed transaction
