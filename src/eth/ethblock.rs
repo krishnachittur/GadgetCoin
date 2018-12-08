@@ -5,7 +5,7 @@ use sha3::{Digest, Sha3_256};
 use super::aliases::{BlockHash, ETHAddress, ProofOfWork};
 use super::ethtxn::ETHTxn;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct ETHBlock {
     prev_hash: BlockHash,
     miner_id: ETHAddress,
@@ -56,6 +56,14 @@ impl ETHBlock {
 
     pub fn randomize_nonce(&mut self, rng: &mut rand::ThreadRng) {
         self.nonce = rng.next_u32();
+    }
+
+    pub fn set_nonce(&mut self, nonce: ProofOfWork) {
+        self.nonce = nonce
+    }
+
+    pub fn get_nonce(&self) -> ProofOfWork {
+        self.nonce
     }
 
     pub fn is_valid(&self) -> bool {

@@ -5,7 +5,7 @@ use super::aliases::ETHAddress;
 use super::gas::Gas;
 use super::wei::Wei;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct ETHTxn {
     pub nonce: u32,
     pub gasprice: Wei,
@@ -56,12 +56,22 @@ impl ETHTxn {
         let pub_key = self.recover_public_key()?;
         Self::get_address_from_public_key(&pub_key)
     }
+
+    pub fn sign_transaction(&mut self, sender_secret: &secp256k1::SecretKey) {
+        let msg = self.binary_serialization();
+        let msg = match ETHTxn::hashed_message(&msg) {
+            Ok(val) => val,
+            _ => panic!("Couldn't retrieve message"),
+        };
+        self.ecdsa_fields = match secp256k1::sign(&msg, sender_secret) {
+            Ok(val) => val,
+            _ => panic!("Signature couldn't be generated"),
+        };
+    }
 }
 
-#[cfg(test)]
-pub mod tests {
-    use super::{super::wei::Wei, ETHTxn};
-
+pub mod utils {
+    use super::ETHTxn;
     /// Returns sample ECSDA fields
     pub fn get_bs_ecsda_field(
         bs_secret_key: secp256k1::SecretKey,
@@ -76,6 +86,11 @@ pub mod tests {
             _ => panic!("Signature couldn't be generated"),
         }
     }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use super::{super::wei::Wei, utils::get_bs_ecsda_field, ETHTxn};
 
     #[test]
     fn test_basic_crypto_should_pass() {

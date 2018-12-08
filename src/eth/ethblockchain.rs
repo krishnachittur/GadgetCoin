@@ -64,6 +64,3 @@ impl ETHBlockchain {
         true
     }
 }
-
-#[cfg(test)]
-pub mod tests {}

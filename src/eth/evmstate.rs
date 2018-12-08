@@ -102,7 +102,7 @@ impl EVMState {
 mod tests {
     use super::{
         super::aliases::ETHAddress, super::ethstate::ETHState,
-        super::ethtxn::tests::get_bs_ecsda_field, super::ethtxn::ETHTxn, super::wei::Wei, EVMState,
+        super::ethtxn::utils::get_bs_ecsda_field, super::ethtxn::ETHTxn, super::wei::Wei, EVMState,
         FailureReason,
     };
 
@@ -117,15 +117,7 @@ mod tests {
 
     impl Ctx {
         fn sign_transaction(&mut self) {
-            let msg = self.txn.binary_serialization();
-            let msg = match ETHTxn::hashed_message(&msg) {
-                Ok(val) => val,
-                _ => panic!("Couldn't retrieve message"),
-            };
-            self.txn.ecdsa_fields = match secp256k1::sign(&msg, &self.sender_secret) {
-                Ok(val) => val,
-                _ => panic!("Signature couldn't be generated"),
-            };
+            self.txn.sign_transaction(&self.sender_secret);
         }
     }
 
