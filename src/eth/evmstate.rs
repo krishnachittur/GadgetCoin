@@ -18,12 +18,6 @@ pub enum FailureReason {
     InvalidCode,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum EndState {
-    SUCCESS,
-    FAILURE(FailureReason),
-}
-
 impl EVMState {
     pub fn new(state: ETHState, miner: ETHAddress) -> EVMState {
         EVMState {
@@ -37,20 +31,20 @@ impl EVMState {
     }
 
     // ingest and process a well-formed transaction
-    pub fn run_transaction(&mut self, txn: &ETHTxn) -> EndState {
+    pub fn run_transaction(&mut self, txn: &ETHTxn) -> Result<(), FailureReason> {
         // make sure sender's address exists and transaction is correctly signed
         let sender_addr = match txn.get_sender_addr() {
             Ok(addr) => {
                 if self.world_state.key_exists(&addr) {
                     addr
                 } else {
-                    return EndState::FAILURE(FailureReason::InvalidSignature);
+                    return Err(FailureReason::InvalidSignature);
                 }
             }
-            Err(_) => return EndState::FAILURE(FailureReason::InvalidSignature),
+            Err(_) => return Err(FailureReason::InvalidSignature),
         };
         if self.world_state.invalid_nonce(&txn, &sender_addr) {
-            return EndState::FAILURE(FailureReason::InvalidNonce);
+            return Err(FailureReason::InvalidNonce);
         }
 
         self.world_state.increment_nonce(&sender_addr);
@@ -59,7 +53,7 @@ impl EVMState {
         let max_fee = Wei::from_gas(txn.gasprice, txn.gaslimit);
         if !self.world_state.safe_deduct(&sender_addr, max_fee) {
             // not enough money
-            return EndState::FAILURE(FailureReason::InsufficientBalance);
+            return Err(FailureReason::InsufficientBalance);
         }
 
         let mut exec_context =
@@ -82,7 +76,7 @@ impl EVMState {
 
         // terminate early if code was invalid
         if !valid_termination {
-            return EndState::FAILURE(FailureReason::InvalidCode);
+            return Err(FailureReason::InvalidCode);
         }
 
         // complete transaction if the value doesn't exceed the money in the sender's account
@@ -90,11 +84,11 @@ impl EVMState {
             .world_state
             .safe_deduct(&sender_addr, exec_context.get_value())
         {
-            return EndState::FAILURE(FailureReason::InsufficientBalance);
+            return Err(FailureReason::InsufficientBalance);
         }
         self.world_state
             .pay(&txn.recipient, exec_context.get_value());
-        EndState::SUCCESS
+        Ok(())
     }
 }
 
@@ -103,7 +97,7 @@ mod tests {
     use super::{
         super::aliases::ETHAddress, super::ethstate::ETHState,
         super::ethtxn::tests::get_bs_ecsda_field, super::ethtxn::ETHTxn, super::wei::Wei, EVMState,
-        EndState, FailureReason,
+        FailureReason,
     };
 
     struct Ctx {
@@ -206,10 +200,7 @@ mod tests {
 
         test_ctx.sign_transaction();
 
-        assert_eq!(
-            test_ctx.evm_state.run_transaction(&test_ctx.txn),
-            EndState::SUCCESS
-        );
+        assert_eq!(test_ctx.evm_state.run_transaction(&test_ctx.txn), Ok(()));
         assert_eq!(
             test_ctx
                 .evm_state
@@ -267,7 +258,7 @@ mod tests {
 
         assert_eq!(
             test_ctx.evm_state.run_transaction(&test_ctx.txn),
-            EndState::FAILURE(FailureReason::InvalidNonce)
+            Err(FailureReason::InvalidNonce)
         );
         assert_eq!(
             test_ctx
@@ -319,7 +310,7 @@ mod tests {
 
         assert_eq!(
             test_ctx.evm_state.run_transaction(&test_ctx.txn),
-            EndState::FAILURE(FailureReason::InvalidSignature)
+            Err(FailureReason::InvalidSignature)
         );
         assert_eq!(
             test_ctx
@@ -372,7 +363,7 @@ mod tests {
 
         assert_eq!(
             test_ctx.evm_state.run_transaction(&test_ctx.txn),
-            EndState::FAILURE(FailureReason::InsufficientBalance)
+            Err(FailureReason::InsufficientBalance)
         );
         assert_eq!(
             test_ctx
@@ -425,7 +416,7 @@ mod tests {
 
         assert_eq!(
             test_ctx.evm_state.run_transaction(&test_ctx.txn),
-            EndState::FAILURE(FailureReason::InsufficientBalance)
+            Err(FailureReason::InsufficientBalance)
         );
         assert_eq!(
             test_ctx
@@ -487,7 +478,7 @@ mod tests {
 
         assert_eq!(
             test_ctx.evm_state.run_transaction(&test_ctx.txn),
-            EndState::FAILURE(FailureReason::InvalidCode)
+            Err(FailureReason::InvalidCode)
         );
         assert_eq!(
             test_ctx
@@ -550,7 +541,7 @@ mod tests {
 
         assert_eq!(
             test_ctx.evm_state.run_transaction(&test_ctx.txn),
-            EndState::FAILURE(FailureReason::InvalidCode)
+            Err(FailureReason::InvalidCode)
         );
         assert_eq!(
             test_ctx

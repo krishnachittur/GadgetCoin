@@ -8,9 +8,6 @@ extern crate secp256k1;
 extern crate serde;
 extern crate sha3;
 
-#[cfg(test)]
-mod tests;
-
 pub mod eth;
 
 pub fn run() {

@@ -5,7 +5,7 @@ use super::aliases::ETHAddress;
 use super::gas::Gas;
 use super::wei::Wei;
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct ETHTxn {
     pub nonce: u32,
     pub gasprice: Wei,
