@@ -63,14 +63,6 @@ impl ETHBlockchain {
         self.blocks.push(block);
         true
     }
-
-    pub fn is_valid_serial() -> bool {
-        false // TODO
-    }
-
-    pub fn is_valid_parallel() -> bool {
-        false // TODO
-    }
 }
 
 #[cfg(test)]
