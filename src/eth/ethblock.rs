@@ -16,7 +16,7 @@ pub struct ETHBlock {
 impl ETHBlock {
     pub fn genesis() -> ETHBlock {
         ETHBlock {
-            prev_hash: [0; 32],`
+            prev_hash: [0; 32],
             transactions: vec![],
             difficulty: 0,
             nonce: 0
