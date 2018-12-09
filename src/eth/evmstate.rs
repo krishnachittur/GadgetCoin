@@ -143,7 +143,7 @@ mod tests {
             recipient: receiver_addr.clone(),
             value: Wei::from_wei(10),
             code: vec![],
-            ecdsa_fields: get_bs_ecsda_field(secp256k1::SecretKey::random(&mut rng)),
+            ecdsa_fields: get_bs_ecsda_field(&secp256k1::SecretKey::random(&mut rng)),
         };
 
         let mut ctx = Ctx {

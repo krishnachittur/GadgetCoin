@@ -66,10 +66,9 @@ impl ETHBlock {
         self.nonce
     }
 
-    pub fn is_valid(&self) -> bool {
-        let zero_bytes = self.difficulty as usize / 8;
-        let zero_bits = self.difficulty % 8;
-        let hash = self.hash();
+    fn valid_hash(hash: BlockHash, difficulty: u32) -> bool {
+        let zero_bytes = difficulty as usize / 8;
+        let zero_bits = difficulty % 8;
 
         for byte in hash[..zero_bytes].iter() {
             if *byte != 0 {
@@ -79,7 +78,34 @@ impl ETHBlock {
         hash[zero_bytes] <= (255 >> zero_bits)
     }
 
+    pub fn is_valid(&self) -> bool {
+        Self::valid_hash(self.hash(), self.difficulty)
+    }
+
     pub fn get_miner_address(&self) -> ETHAddress {
         self.miner_id
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ETHBlock;
+
+    #[test]
+    fn test_hashing() {
+        let hash1 = [0; 32];
+        assert!(ETHBlock::valid_hash(hash1, 255));
+
+        let hash2 = [1; 32];
+        assert!(ETHBlock::valid_hash(hash2, 7));
+        assert!(!ETHBlock::valid_hash(hash2, 8));
+
+        let mut hash3 = [2; 32];
+        hash3[0] = 0;
+        hash3[1] = 0;
+        assert!(ETHBlock::valid_hash(hash3, 10));
+        assert!(ETHBlock::valid_hash(hash3, 16));
+        assert!(ETHBlock::valid_hash(hash3, 16 + 6));
+        assert!(!ETHBlock::valid_hash(hash3, 16 + 7));
     }
 }

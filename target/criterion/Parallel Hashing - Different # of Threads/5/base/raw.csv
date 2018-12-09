@@ -1,0 +1,3 @@
+group,function,value,sample_time_nanos,iteration_count
+Parallel Hashing - Different # of Threads,,5,11498712820,1
+Parallel Hashing - Different # of Threads,,5,13232355671,2

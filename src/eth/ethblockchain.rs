@@ -64,3 +64,27 @@ impl ETHBlockchain {
         true
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{super::ETHTxn, ETHBlockchain};
+
+    #[test]
+    #[ignore]
+    fn basic_sequential_blockchain_test() {
+        let mut rng = rand::thread_rng();
+        let secretkey = secp256k1::SecretKey::random(&mut rng);
+        let pubkey = secp256k1::PublicKey::from_secret_key(&secretkey);
+        let address = ETHTxn::get_address_from_public_key(&pubkey).unwrap();
+
+        let mut block_chain = ETHBlockchain::new(1, 13, address);
+        let mut block = block_chain.flush_txns();
+
+        let mut iteration = 0;
+        while !block.is_valid() {
+            iteration += 1;
+            block.randomize_nonce(&mut rng);
+        }
+        println!("Ran for {:?} iterations.", iteration);
+    }
+}

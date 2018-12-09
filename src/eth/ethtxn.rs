@@ -74,7 +74,7 @@ pub mod utils {
     use super::ETHTxn;
     /// Returns sample ECSDA fields
     pub fn get_bs_ecsda_field(
-        bs_secret_key: secp256k1::SecretKey,
+        bs_secret_key: &secp256k1::SecretKey,
     ) -> (secp256k1::Signature, secp256k1::RecoveryId) {
         let bs_msg_bytes = b"deadbeef";
         let bs_msg = match ETHTxn::hashed_message(bs_msg_bytes) {
@@ -112,7 +112,7 @@ pub mod tests {
             },
             value: Wei::from_wei(10),
             code: vec![0x31, 0x3a, 0x56, 0x57, 0x50, 0x05],
-            ecdsa_fields: get_bs_ecsda_field(secp256k1::SecretKey::random(&mut rng)),
+            ecdsa_fields: get_bs_ecsda_field(&secp256k1::SecretKey::random(&mut rng)),
         };
 
         let msg = {
@@ -152,7 +152,7 @@ pub mod tests {
             },
             value: Wei::from_wei(10),
             code: vec![0x31, 0x3a, 0x56, 0x57, 0x50, 0x05],
-            ecdsa_fields: get_bs_ecsda_field(secp256k1::SecretKey::random(&mut rng)),
+            ecdsa_fields: get_bs_ecsda_field(&secp256k1::SecretKey::random(&mut rng)),
         };
 
         let msg = {

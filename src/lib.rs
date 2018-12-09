@@ -11,5 +11,5 @@ extern crate sha3;
 pub mod eth;
 
 pub fn run() {
-    println!("Hello, world!");
+    eth::benchutils::run_benchmarks();
 }
