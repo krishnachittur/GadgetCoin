@@ -6,3 +6,6 @@ We have added some instructions to the Ethereum ISA via previously unused opcode
 
 ## Goal
 The goal of this project was to learn about Rust and Ethereum while benchmarking the performance of different concurrent and sequential implementations of nonce computation and blockchain verification.
+
+## Usage
+Use `cargo bench` to compile the code and run benchmarks.
